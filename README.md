@@ -133,7 +133,3 @@ The **Employee Data Management System** is a scalable data engineering project b
 * Build a dashboard for HRs to visualize trends
 
 ---
-
-## 📝 License
-
-MIT License

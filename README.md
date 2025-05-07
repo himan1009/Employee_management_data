@@ -1,6 +1,7 @@
 # Employee Data Management System
 
 ![Mermaid Chart](./mermaid-diagram.png)
+![Mermaid Chart](./mermaid-diagram_01.png)
 
 ## 🚀 Project Overview
 
@@ -97,7 +98,7 @@ The **Employee Data Management System** is a scalable data engineering project b
 
 ## 📊 ER Diagram
 
-![ER Diagram](https://user-images.githubusercontent.com/placeholder/er-diagram.png)
+![ER Diagram](./er-diagram.png)
 
 ---
 

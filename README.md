@@ -1,6 +1,6 @@
 # Employee Data Management System
 
-![Architecture]([https://user-images.githubusercontent.com/placeholder/architecture-diagram.png](https://drive.google.com/file/d/1wKYSUc9yYoYsalMnjRVtsGHaZYLZ7vKu/view?usp=drive_link))
+![Architecture](Mermaid Chart - Create complex, visual diagrams with text. A smarter way of creating diagrams.-2025-05-06-235654.png)
 
 ## 🚀 Project Overview
 

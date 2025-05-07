@@ -1,6 +1,6 @@
 # Employee Data Management System
 
-![Architecture](https://user-images.githubusercontent.com/placeholder/architecture-diagram.png)
+![Architecture]([https://user-images.githubusercontent.com/placeholder/architecture-diagram.png](https://drive.google.com/file/d/1wKYSUc9yYoYsalMnjRVtsGHaZYLZ7vKu/view?usp=drive_link))
 
 ## 🚀 Project Overview
 

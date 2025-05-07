@@ -1,6 +1,6 @@
 # Employee Data Management System
 
-![Alt Text](./assets/image.png)
+![Alt Text](Mermaid Chart - Create complex, visual diagrams with text. A smarter way of creating diagrams.-2025-05-06-235654.png)
 
 ## 🚀 Project Overview
 

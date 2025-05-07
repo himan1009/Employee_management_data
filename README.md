@@ -1,5 +1,7 @@
 # Employee Data Management System
 
+https://drive.google.com/file/d/1wKYSUc9yYoYsalMnjRVtsGHaZYLZ7vKu/view?usp=sharing
+
 ## 🚀 Project Overview
 
 The **Employee Data Management System** is a scalable data engineering project built on AWS to automate the ingestion, processing, and monitoring of employee data. It leverages batch pipelines (daily/yearly) and real-time Kafka streams to track employee activity, generate insightful reports, and detect misuse of organizational policies.

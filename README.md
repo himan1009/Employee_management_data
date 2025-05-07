@@ -1,5 +1,6 @@
 # Employee Data Management System
 
+## ARCHITECTURE
 ![Mermaid Chart](./mermaid-diagram.png)
 ![Mermaid Chart](./mermaid-diagram_01.png)
 

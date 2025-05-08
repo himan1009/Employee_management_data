@@ -6,7 +6,7 @@ from awsglue.context import GlueContext
 from awsglue.utils import getResolvedOptions
 from awsglue.job import Job
 
-# Step 1: Glue job args
+# Step 1: Glue setup
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
 sc = SparkContext()
 glueContext = GlueContext(sc)
@@ -16,7 +16,7 @@ spark._jsc.hadoopConfiguration().set("spark.jars", "/home/ubuntu/postgresql-42.7
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
-# Step 2: JDBC source and target info
+# Step 2: JDBC setup
 jdbc_url = "jdbc:postgresql://3.221.182.234:5432/test_topic"
 input_table = "employee_db_salary"
 output_table = "count_by_designation"
@@ -27,34 +27,25 @@ db_properties = {
 }
 
 try:
-    print("Reading input data from PostgreSQL table...")
+    print("Reading employee data from PostgreSQL...")
     df = spark.read.jdbc(url=jdbc_url, table=input_table, properties=db_properties)
 
-    print("Filtering active employees and grouping by designation...")
-    active_employees_df = (
+    print("Calculating active employee count by designation...")
+    result_df = (
         df.filter(lower(col("status")) == "active")
-        .groupBy(
-            when(col("designation").isNull(), lit("UNKNOWN"))
-            .otherwise(col("designation"))
-            .alias("designation")
-        )
+        .withColumn("designation", when(col("designation").isNull(), lit("UNKNOWN")).otherwise(col("designation")))
+        .groupBy("designation")
         .agg(count("emp_id").alias("active_emp_count"))
         .orderBy("active_emp_count", ascending=False)
     )
 
-    if active_employees_df.count() > 0:
-        print("Writing designation-wise active employee count to database...")
-        active_employees_df.write \
-            .mode("overwrite") \
-            .jdbc(url=jdbc_url, table=output_table, properties=db_properties)
-        print("✅ Write successful to table 'count_by_designation'.")
-    else:
-        print("⚠️ No active employees found. Nothing written.")
+    print("Writing result to PostgreSQL...")
+    result_df.write.mode("overwrite").jdbc(url=jdbc_url, table=output_table, properties=db_properties)
+    print("Write successful to table:", output_table)
 
 except Exception:
-    print("❌ Job failed due to error:")
+    print("Job failed due to an error:")
     print(traceback.format_exc())
     raise
 
-# Step 3: Commit job
 job.commit()

@@ -48,7 +48,7 @@ try:
         .load(bronze_path)
 
     if df.rdd.isEmpty():
-        print("⚠️ No data found in input. Skipping write.")
+        print("No data found in input. Skipping write.")
     else:
         # Clean and transform
         df = df.dropDuplicates()
@@ -59,10 +59,10 @@ try:
             .mode("append") \
             .jdbc(url=jdbc_url, table=table_name, properties=db_properties)
 
-        print(f"✅ Successfully written {df.count()} records to table '{table_name}'.")
+        print(f"Successfully written {df.count()} records to table '{table_name}'.")
 
 except Exception as e:
-    print("❌ Job failed due to error:")
+    print("Job failed due to error:")
     print(traceback.format_exc())
     raise
 

@@ -37,10 +37,10 @@ raw_files = s3.list_objects_v2(Bucket=bucket, Prefix=raw_prefix).get("Contents",
 csv_files = [obj["Key"] for obj in raw_files if obj["Key"].endswith(".csv")]
 
 if not csv_files:
-    print("⚠️ No CSV files found in raw folder.")
+    print("No CSV files found in raw folder.")
     sys.exit(0)
 
-print(f"📄 Found {len(csv_files)} CSV files.")
+print(f" Found {len(csv_files)} CSV files.")
 
 # Step 2: Merge CSVs
 raw_paths = [f"s3://{bucket}/{key}" for key in csv_files]
@@ -48,12 +48,12 @@ df_raw = spark.read.option("header", "true").csv(raw_paths)
 
 # Save processed backup to processed folder
 df_raw.coalesce(1).write.mode("overwrite").option("header", "true").csv(processed_output_path)
-print(f"📦 Merged raw CSV backed up to: {processed_output_path}")
+print(f" Merged raw CSV backed up to: {processed_output_path}")
 
 # Delete raw files after backup
 for key in csv_files:
     s3.delete_object(Bucket=bucket, Key=key)
-    print(f"🗑️ Deleted raw file: {key}")
+    print(f"️ Deleted raw file: {key}")
 
 # Step 3: Load from processed CSV
 df_processed = spark.read.option("header", "true").csv(processed_output_path)
@@ -68,8 +68,8 @@ df_cleaned = df_processed.select(
 # Step 5: Write to PostgreSQL
 if not df_cleaned.rdd.isEmpty():
     df_cleaned.write.mode("append").jdbc(url=jdbc_url, table=output_table, properties=db_properties)
-    print(f"✅ Final cleaned employee data written to PostgreSQL table: {output_table}")
+    print(f"Final cleaned employee data written to PostgreSQL table: {output_table}")
 else:
-    print("⚠️ No valid rows to write after cleaning.")
+    print("No valid rows to write after cleaning.")
 
-print("🎉 Glue job completed successfully.")
+print(" Glue job completed successfully.")

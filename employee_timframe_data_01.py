@@ -12,7 +12,6 @@ from pyspark.sql import SparkSession, Window
 from pyspark.sql.functions import col, from_unixtime, to_date, when, row_number, lit, min as min_, lead
 from pyspark.sql.types import StructType, StructField, StringType, DateType, DoubleType
 
-# === Glue Setup ===
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
 sc = SparkContext()
 glueContext = GlueContext(sc)
@@ -24,7 +23,6 @@ spark._jsc.hadoopConfiguration().set("spark.jars", "/home/ubuntu/postgresql-42.7
 # Example: --extra-jars s3://your-bucket/jars/postgresql-42.7.2.jar
 spark.sparkContext.setLogLevel("ERROR")
 
-# === PostgreSQL Config ===
 POSTGRES_URL = "jdbc:postgresql://3.221.182.234:5432/test_topic"
 POSTGRES_PROPERTIES = {"user": "test_user", "password": "test_user", "driver": "org.postgresql.Driver"}
 PSYCOPG2_CONN = dict(dbname="test_topic", user="test_user", password="test_user", host="3.221.182.234", port="5432")
@@ -34,11 +32,11 @@ FINAL_TABLE = "employee_db_salary"
 BACKUP_TABLE = "employee_db_salary_backup"
 TEMP_LOCAL_PATH = "/tmp/final_pg_upload"
 
-# === S3 Paths for raw and archive ===
+# S3 Paths for raw and archive 
 RAW_PATH = "s3://poc-bootcamp-capstone-group1/poc-bootcamp-group1-bronze/emp_timeframe_data_qus2/raw/"
 PROCESSED_RAW_PATH = "s3://poc-bootcamp-capstone-group1/poc-bootcamp-group1-bronze/emp_timeframe_data_qus2/processed_raw/"
 
-# === Manual Schema ===
+# Manual Schema 
 schema = StructType([
     StructField("emp_id", StringType(), True),
     StructField("designation", StringType(), True),
@@ -48,13 +46,13 @@ schema = StructType([
     StructField("status", StringType(), True)
 ])
 
-# === Read Raw File ===
+# Read Raw File 
 df = spark.read.option("header", True).csv(RAW_PATH)
 df = df.withColumn("start_date", to_date(from_unixtime(col("start_date").cast("long"))))
 df = df.withColumn("end_date", to_date(from_unixtime(col("end_date").cast("long"))))
 df = df.withColumn("salary", col("salary").cast("double"))
 
-# === Deduplication ===
+# Deduplication 
 w1 = Window.partitionBy("emp_id", "start_date", "end_date").orderBy(col("salary").desc())
 df = df.withColumn("rn1", row_number().over(w1)).filter(col("rn1") == 1).drop("rn1")
 
@@ -64,10 +62,10 @@ df_non_nulls = df.filter(col("end_date").isNotNull())
 df = df_with_nulls.unionByName(df_non_nulls)
 df = df.withColumn("status", when(col("end_date").isNull(), "ACTIVE").otherwise("INACTIVE"))
 
-# === Write to staging ===
+# Write to staging 
 df.write.mode("overwrite").jdbc(POSTGRES_URL, STAGING_TABLE, properties=POSTGRES_PROPERTIES)
 
-# === Load existing data ===
+# Load existing data 
 tables_df = spark.read.jdbc(POSTGRES_URL, "information_schema.tables", properties=POSTGRES_PROPERTIES)
 exists = tables_df.filter(col("table_name") == FINAL_TABLE).count() > 0
 
@@ -110,13 +108,13 @@ else:
                        .drop("next_start_date", "is_latest")
     final_df = final_df.withColumn("status", when(col("end_date").isNull(), "ACTIVE").otherwise("INACTIVE"))
 
-    # === Backup table ===
+    # Backup table
     conn = psycopg2.connect(**PSYCOPG2_CONN)
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS employee_db_salary_backup;")
     cur.execute("CREATE TABLE employee_db_salary_backup AS TABLE employee_db_salary;")
 
-    # === Delete matching rows using temp table
+    # Delete matching rows using temp table
     keys = final_df.select("emp_id", "start_date").distinct().collect()
     key_tuples = [(row["emp_id"], row["start_date"].strftime("%Y-%m-%d")) for row in keys]
     if key_tuples:
@@ -134,7 +132,7 @@ else:
               AND employee_db_salary.start_date = delete_keys.start_date;
         """)
 
-    # === Copy data into PostgreSQL
+    # Copy data into PostgreSQL
     final_df.coalesce(1).write.option("header", False).option("delimiter", ",").mode("overwrite").save(TEMP_LOCAL_PATH)
 
     # Convert Spark DataFrame to Pandas and write directly to buffer
@@ -150,9 +148,9 @@ else:
     conn.commit()
     cur.close()
     conn.close()
-    print("✅ Final table updated using psycopg2 (delete + insert).")
+    print("Final table updated using psycopg2 (delete + insert).")
 
-# === Archive raw file ===
+# Archive raw file 
 s3 = boto3.client("s3")
 raw_bucket = RAW_PATH.split("/")[2]
 raw_prefix = "/".join(RAW_PATH.split("/")[3:])
@@ -164,4 +162,4 @@ for obj in objs:
     if not key.endswith('/'):
         s3.copy_object(Bucket=raw_bucket, CopySource={'Bucket': raw_bucket, 'Key': key}, Key=archive_prefix + key.split('/')[-1])
         s3.delete_object(Bucket=raw_bucket, Key=key)
-        print(f"📦 Archived {key}")
+        print(f"Archived {key}")

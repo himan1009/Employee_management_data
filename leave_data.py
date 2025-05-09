@@ -95,12 +95,12 @@ try:
         deduped_df.write \
             .mode("overwrite") \
             .jdbc(url=jdbc_url, table=final_output_table, properties=db_properties)
-        print(f"✅ Leave data written to PostgreSQL table '{final_output_table}'.")
+        print(f"Leave data written to PostgreSQL table '{final_output_table}'.")
     else:
-        print("⚠️ No leave data to write. Skipping DB write.")
+        print("No leave data to write. Skipping DB write.")
 
 except Exception:
-    print("❌ Job failed due to error:")
+    print("Job failed due to error:")
     print(traceback.format_exc())
     raise
 
